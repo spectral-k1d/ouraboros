@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const PLATFORMS = ['ChatGPT', 'Claude', 'Gemini', 'Grok', 'Other']
-const TOPICS = ['work', 'creative', 'personal', 'research', 'other']
+const TOPICS = ['work', 'creative', 'personal', 'research', 'self improvement', 'brainstorming', 'advice', 'general questions', 'other']
 
 export default function SessionStart({ onStart }) {
   const [platform, setPlatform] = useState('')
