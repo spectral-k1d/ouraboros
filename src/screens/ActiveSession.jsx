@@ -130,7 +130,7 @@ export default function ActiveSession({ session, onEnd, userId, user }) {
   const checkInPendingRef = useRef(false)
 
   const username = user?.email?.split('@')[0] || 'user'
-  const ringSize = 500
+  const ringSize = 620
 
   // notification permission + first check-in schedule
   useEffect(() => {

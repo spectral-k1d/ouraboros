@@ -61,7 +61,7 @@ export default function Auth() {
       gap: 48,
     }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-        <Ouroboros risk={1.5} size="140px" />
+        <Ouroboros risk={1.5} size="220px" />
         <div style={{ fontSize: 13, color: 'var(--text-muted)', letterSpacing: '0.12em', textTransform: 'lowercase' }}>
           ouroboros
         </div>
