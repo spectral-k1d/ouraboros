@@ -168,7 +168,6 @@ export default function ActiveSession({ session, onEnd, userId, user }) {
     setShowCheckIn(true)
     playChime()
     try { navigator.vibrate([200]) } catch {}
-    scheduleNextCheckIn()
   }, [usedSignalKeys])
 
   // polling loop for check-in due
@@ -209,6 +208,7 @@ export default function ActiveSession({ session, onEnd, userId, user }) {
   function handleCheckInComplete(result) {
     checkInPendingRef.current = false
     setShowCheckIn(false)
+    scheduleNextCheckIn()   // 15s starts from dismissal, not from when overlay appeared
     const { groundedScore, yesCount, signalKeys } = result
     const newRisk = calcInstantRisk(groundedScore, yesCount)
     const newConsec = updateConsecutiveYes(consecutiveYes, yesCount)

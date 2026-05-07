@@ -18,7 +18,7 @@ export function shouldShowDrift(instantRisk, sessionMinutes) {
   return instantRisk > 5 || sessionMinutes > 30
 }
 
-// 8 signals pool
+// 10 signals pool — includes 2 drift questions
 export const SIGNALS = [
   {
     key: 'boundary_dissolution',
@@ -51,6 +51,14 @@ export const SIGNALS = [
   {
     key: 'emotional_intensity',
     question: 'Is this conversation feeling more emotionally charged than you expected?',
+  },
+  {
+    key: 'drift_topic',
+    question: 'Is this conversation still about what you opened it for?',
+  },
+  {
+    key: 'drift_closeable',
+    question: 'Could you close this tab easily right now?',
   },
 ]
 
