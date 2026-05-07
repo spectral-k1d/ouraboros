@@ -50,11 +50,13 @@ export default function Dashboard({ userId, onNewSession, onViewPublic, user }) 
 
   async function loadSessions() {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('sessions')
       .select('*')
       .eq('user_id', userId)
       .order('started_at', { ascending: false })
+    if (error) console.error('sessions fetch error:', error)
+    console.log('userId:', userId, 'sessions:', data)
     setSessions(data || [])
     if (data && data.length > 0) {
       setSelectedSession(data[0])
