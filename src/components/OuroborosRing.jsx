@@ -78,7 +78,7 @@ const OuroborosRing = memo(forwardRef(function OuroborosRing({ size = 500 }, ref
       {/* inline SVG — no mask, no URL, perfect centering */}
       <svg
         ref={svgRef}
-        viewBox="80 -20 510 510"
+        viewBox="50 -20 510 510"
         preserveAspectRatio="xMidYMid meet"
         style={{
           width: '100%',
