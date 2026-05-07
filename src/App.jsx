@@ -27,6 +27,7 @@ export default function App() {
   const [activeSession, setActiveSession] = useState(null)
   const [lastRisk, setLastRisk] = useState(1)
   const [postRatings, setPostRatings] = useState(null)
+  const [lastDangerScore, setLastDangerScore] = useState(0)
   const [draft, setDraft] = useState(null)
   const [theme, setTheme] = useState('dark')
 
@@ -34,7 +35,6 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme === 'light' ? 'light' : '')
   }, [theme])
 
-  // auth state listener
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
@@ -88,7 +88,6 @@ export default function App() {
       .single()
     if (error) {
       console.error('session insert error', error)
-      // proceed with local session even if DB fails
       setActiveSession({ ...sessionData, session_id: 'local-' + Date.now() })
     } else {
       setActiveSession(data)
@@ -100,8 +99,7 @@ export default function App() {
     setLastRisk(risk)
     if (activeSession?.session_id && !activeSession.session_id.startsWith('local-')) {
       const endedAt = new Date().toISOString()
-      const startedAt = new Date(activeSession.started_at)
-      const durationMinutes = Math.round((Date.now() - startedAt.getTime()) / 60000)
+      const durationMinutes = Math.round((Date.now() - new Date(activeSession.started_at).getTime()) / 60000)
       await supabase
         .from('sessions')
         .update({ ended_at: endedAt, duration_minutes: durationMinutes })
@@ -111,17 +109,25 @@ export default function App() {
     setView(VIEWS.POST_LOG)
   }
 
-  async function handlePostLogComplete({ ratings, platform, topic }) {
+  // called by PostSessionLog with { ratings, dangerScore }
+  // ratings has 9 keys (8 signals + grounded); dangerScore is pre-calculated
+  async function handlePostLogComplete({ ratings, dangerScore }) {
     setPostRatings(ratings)
+    setLastDangerScore(dangerScore)
+
     if (activeSession?.session_id && !activeSession.session_id.startsWith('local-')) {
+      // separate grounded from the 8 DB signal columns
+      const { grounded, ...signalRatings } = ratings
+
       await supabase.from('post_session_logs').insert({
         session_id: activeSession.session_id,
-        ...ratings,
+        ...signalRatings,
       })
-      if (platform !== activeSession.platform || topic !== activeSession.topic_category) {
-        await supabase.from('sessions').update({ platform, topic_category: topic })
-          .eq('session_id', activeSession.session_id)
-      }
+
+      await supabase
+        .from('sessions')
+        .update({ danger_score: dangerScore })
+        .eq('session_id', activeSession.session_id)
     }
     setView(VIEWS.SUMMARY)
   }
@@ -144,36 +150,24 @@ export default function App() {
 
   return (
     <>
-      {/* theme toggle — always visible when logged in */}
       {user && (
         <button
           onClick={handleThemeToggle}
           style={{
-            position: 'fixed',
-            top: 16,
-            left: 16,
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            zIndex: 200,
-            letterSpacing: '0.06em',
+            position: 'fixed', top: 16, left: 16,
+            fontSize: 11, color: 'var(--text-muted)', zIndex: 200, letterSpacing: '0.06em',
           }}
         >
           {theme === 'dark' ? 'light' : 'dark'}
         </button>
       )}
 
-      {/* sign out when on dashboard */}
       {user && view === VIEWS.DASHBOARD && (
         <button
           onClick={() => supabase.auth.signOut()}
           style={{
-            position: 'fixed',
-            top: 16,
-            right: 16,
-            fontSize: 11,
-            color: 'var(--text-muted)',
-            zIndex: 200,
-            letterSpacing: '0.06em',
+            position: 'fixed', top: 16, right: 16,
+            fontSize: 11, color: 'var(--text-muted)', zIndex: 200, letterSpacing: '0.06em',
           }}
         >
           sign out
@@ -207,22 +201,19 @@ export default function App() {
         <ActiveSession
           session={activeSession}
           userId={user?.id}
+          user={user}
           onEnd={handleEndSession}
         />
       )}
 
       {view === VIEWS.POST_LOG && (
-        <PostSessionLog
-          session={activeSession}
-          lastRisk={lastRisk}
-          onComplete={handlePostLogComplete}
-        />
+        <PostSessionLog onComplete={handlePostLogComplete} />
       )}
 
       {view === VIEWS.SUMMARY && postRatings && (
         <SessionSummary
           ratings={postRatings}
-          lastRisk={lastRisk}
+          dangerScore={lastDangerScore}
           onCorrect={handleCorrection}
           onDone={() => setView(VIEWS.DASHBOARD)}
         />

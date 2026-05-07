@@ -22,8 +22,12 @@ create table if not exists sessions (
   started_at timestamptz default now(),
   ended_at timestamptz,
   duration_minutes integer,
-  consecutive_yes_count integer default 0
+  consecutive_yes_count integer default 0,
+  danger_score numeric(4,2)
 );
+
+-- Run this separately if adding danger_score to an existing table:
+-- alter table sessions add column if not exists danger_score numeric(4,2);
 
 alter table sessions enable row level security;
 create policy "sessions: own rows" on sessions
