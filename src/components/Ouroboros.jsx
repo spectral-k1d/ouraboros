@@ -3,71 +3,65 @@ import { useEffect, useRef, useMemo } from 'react'
 function getRiskStyle(risk) {
   if (risk < 4) {
     return {
-      // off-white — no hue shift, just brightness
-      cssFilter: 'brightness(0.95) saturate(0.1)',
-      glowColor: 'rgba(240,237,232,0.07)',
+      color: '#f0ede8',
+      glowColor: 'rgba(240,237,232,0.06)',
       pulseMin: 0.97,
       pulseMax: 1.03,
       pulseDuration: 4000,
       irregular: false,
-      blurPx: 0,
       label: null,
     }
   }
   if (risk < 6) {
     const t = (risk - 4) / 2
     return {
-      cssFilter: `brightness(1) saturate(${0.3 + t * 0.5}) sepia(${t * 0.4})`,
-      glowColor: `rgba(232,192,184,${0.05 + t * 0.08})`,
+      color: `rgb(${Math.round(240)}, ${Math.round(237 - t * 60)}, ${Math.round(232 - t * 80)})`,
+      glowColor: `rgba(240,180,170,${0.06 + t * 0.08})`,
       pulseMin: 0.96,
       pulseMax: 1.04,
       pulseDuration: 3000,
       irregular: false,
-      blurPx: t * 1.5,
       label: null,
     }
   }
   if (risk < 7.5) {
     const t = (risk - 6) / 1.5
     return {
-      cssFilter: `brightness(1.1) saturate(${0.8 + t * 0.6}) sepia(${0.4 + t * 0.3}) hue-rotate(${-10 - t * 15}deg)`,
-      glowColor: `rgba(212,101,74,${0.12 + t * 0.12})`,
+      color: `rgb(${Math.round(230 - t * 10)}, ${Math.round(120 - t * 70)}, ${Math.round(100 - t * 70)})`,
+      glowColor: `rgba(220,80,60,${0.12 + t * 0.12})`,
       pulseMin: 0.94,
       pulseMax: 1.06,
       pulseDuration: 2200,
       irregular: false,
-      blurPx: 1.5 + t * 2.5,
       label: null,
     }
   }
   if (risk < 9) {
     const t = (risk - 7.5) / 1.5
     return {
-      cssFilter: `brightness(1.2) saturate(2.5) sepia(0.9) hue-rotate(${-30 - t * 20}deg)`,
-      glowColor: `rgba(220,40,30,${0.2 + t * 0.2})`,
+      color: `rgb(${Math.round(210 + t * 45)}, ${Math.round(30 - t * 20)}, ${Math.round(20 - t * 15)})`,
+      glowColor: `rgba(220,30,20,${0.22 + t * 0.18})`,
       pulseMin: 0.91,
       pulseMax: 1.09,
       pulseDuration: 1600,
       irregular: true,
-      blurPx: 3 + t * 4,
       label: 'check in',
     }
   }
   return {
-    cssFilter: 'brightness(1.4) saturate(3) sepia(1) hue-rotate(-55deg)',
+    color: '#ff1a0a',
     glowColor: 'rgba(255,26,10,0.45)',
     pulseMin: 0.88,
     pulseMax: 1.12,
     pulseDuration: 1100,
     irregular: true,
-    blurPx: 7,
     label: 'check in',
   }
 }
 
 export default function Ouroboros({ risk = 1, size = '60vh', children, small = false }) {
   const style = useMemo(() => getRiskStyle(risk), [risk])
-  const animRef = useRef(null)
+  const ringRef = useRef(null)
   const frameRef = useRef(null)
 
   useEffect(() => {
@@ -78,7 +72,6 @@ export default function Ouroboros({ risk = 1, size = '60vh', children, small = f
       const duration = style.pulseDuration
 
       let phase = (elapsed % duration) / duration
-
       if (style.irregular) {
         const noise = Math.sin(elapsed * 0.003) * 0.15 + Math.sin(elapsed * 0.0071) * 0.08
         phase = ((phase + noise) % 1 + 1) % 1
@@ -87,8 +80,8 @@ export default function Ouroboros({ risk = 1, size = '60vh', children, small = f
       const t = 0.5 - 0.5 * Math.cos(phase * Math.PI * 2)
       const scale = style.pulseMin + (style.pulseMax - style.pulseMin) * t
 
-      if (animRef.current) {
-        animRef.current.style.transform = `scale(${scale})`
+      if (ringRef.current) {
+        ringRef.current.style.transform = `scale(${scale})`
       }
 
       frameRef.current = requestAnimationFrame(animate)
@@ -99,7 +92,6 @@ export default function Ouroboros({ risk = 1, size = '60vh', children, small = f
   }, [style])
 
   const svgSize = small ? '48px' : size
-  const glowSize = small ? '64px' : `calc(${size} + 24px)`
 
   return (
     <div style={{
@@ -114,28 +106,30 @@ export default function Ouroboros({ risk = 1, size = '60vh', children, small = f
       {/* glow halo */}
       <div style={{
         position: 'absolute',
-        width: glowSize,
-        height: glowSize,
+        inset: '-12%',
         borderRadius: '50%',
         background: `radial-gradient(ellipse, ${style.glowColor} 30%, transparent 70%)`,
         transition: 'background 1.5s ease',
         pointerEvents: 'none',
       }} />
 
-      {/* ouroboros image with pulse animation */}
-      <img
-        ref={animRef}
-        src="/ouroboros.svg"
-        alt="ouroboros"
+      {/* ouroboros ring — CSS mask for direct color control */}
+      <div
+        ref={ringRef}
         style={{
           width: '100%',
           height: '100%',
-          objectFit: 'contain',
-          filter: `${style.cssFilter} drop-shadow(0 0 ${style.blurPx * 2}px ${style.glowColor})`,
+          WebkitMaskImage: 'url(/ouroboros.svg)',
+          maskImage: 'url(/ouroboros.svg)',
+          WebkitMaskSize: 'contain',
+          maskSize: 'contain',
+          WebkitMaskRepeat: 'no-repeat',
+          maskRepeat: 'no-repeat',
+          WebkitMaskPosition: 'center',
+          maskPosition: 'center',
+          backgroundColor: style.color,
           transformOrigin: 'center center',
-          transition: 'filter 1.5s ease',
-          userSelect: 'none',
-          pointerEvents: 'none',
+          transition: 'background-color 1.5s ease',
         }}
       />
 
@@ -154,7 +148,7 @@ export default function Ouroboros({ risk = 1, size = '60vh', children, small = f
           <div style={{
             fontSize: '11px',
             letterSpacing: '0.15em',
-            color: '#ff4422',
+            color: style.color,
             textTransform: 'lowercase',
             marginTop: 8,
             animation: 'pulse-label 1.5s ease-in-out infinite',
