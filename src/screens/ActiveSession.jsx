@@ -178,7 +178,7 @@ export default function ActiveSession({ session, onEnd, userId, user }) {
         triggerCheckIn()
         if (document.visibilityState === 'hidden') sendCheckInNotification()
       }
-    }, 10_000)
+    }, 1_000)
     return () => clearInterval(id)
   }, [showCheckIn, triggerCheckIn])
 
