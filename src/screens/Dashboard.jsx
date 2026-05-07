@@ -121,7 +121,7 @@ export default function Dashboard({ userId, onNewSession, onViewPublic, user }) 
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-        <Ouroboros risk={1} size="100px" />
+        <Ouroboros risk={1} size="260px" />
       </div>
     )
   }
@@ -136,7 +136,7 @@ export default function Dashboard({ userId, onNewSession, onViewPublic, user }) 
         justifyContent: 'center',
         gap: 32,
       }}>
-        <Ouroboros risk={1} size="180px" />
+        <Ouroboros risk={1} size="340px" />
         <div style={{ textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
             no sessions yet.
