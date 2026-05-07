@@ -7,7 +7,7 @@ import { playChime, playAlarm } from '../lib/audio'
 import { saveDraft } from '../lib/localStorage'
 import { supabase } from '../lib/supabase'
 
-const CHECK_IN_INTERVAL_MS = 30 * 1000
+const CHECK_IN_INTERVAL_MS = 15 * 1000
 const CHECKIN_DUE_KEY = 'ouroboros_checkin_due'
 
 const SIGNAL_KEYS = [
