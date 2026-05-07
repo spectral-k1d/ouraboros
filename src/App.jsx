@@ -46,6 +46,7 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
         setUser(session.user)
+        supabase.from('users').upsert({ user_id: session.user.id }, { onConflict: 'user_id' })
         setView(VIEWS.DASHBOARD)
       } else {
         setUser(null)
