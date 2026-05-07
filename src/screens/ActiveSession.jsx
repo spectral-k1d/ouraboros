@@ -72,10 +72,19 @@ export default function ActiveSession({ session, onEnd, userId }) {
 
   // elapsed timer — uses absolute start time so background tabs stay accurate
   useEffect(() => {
-    const id = setInterval(() => {
+    function sync() {
       setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000))
-    }, 1000)
-    return () => clearInterval(id)
+    }
+    const id = setInterval(sync, 1000)
+    // immediately re-sync when the user returns to this tab
+    function onVisible() {
+      if (document.visibilityState === 'visible') sync()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [])
 
   // save draft to localStorage on changes
